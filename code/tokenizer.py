@@ -2,7 +2,7 @@ from __future__ import print_function
 from pylab import *
 import matplotlib.pyplot  as pyplot
 
-SPLITTING_CHAR_SET = (' ', ',', ".", '!', '?')
+SPLITTING_CHAR_SET = (' ', ',', ".", "'", '!', '?', ';', ':')
 NON_TOKEN_CHARS = (' ')
 
 def main():
@@ -11,7 +11,7 @@ def main():
 	
 	token_list_en = []
 	for line in f:
-		# enforcing lower case representation
+		# Normalizing to lower before tokenization
 		token_list_en.extend(tokenize(line.lower()))
 
 	print("%d English tokens in general..." % len(token_list_en))
@@ -38,7 +38,7 @@ def main():
 		# enforcing lower case representation
 		token_list_fin.extend(tokenize(line.lower()))
 	
-	print("%d Finish tokens in general..." % len(token_list_fin))
+	print("%d Finnish tokens in general..." % len(token_list_fin))
 	print("computing frequencies...")
 	freq_fin = get_frequency_list(token_list_fin)
 	print("%d unique Finish tokens..." % len(freq_fin))
@@ -52,7 +52,8 @@ def tokenize(s):
 	tokens, token = [], ''
 	for c in s:
 		if c in SPLITTING_CHAR_SET:
-			tokens.append(token)
+			if token:
+				tokens.append(token)
 			if c not in NON_TOKEN_CHARS:
 				tokens.append(c) # adding special characters as separate tokens
 			token = ''
@@ -72,22 +73,22 @@ def plot_zipf(*freq):
 	colors = ('red', 'green', 'blue')
 
 
-	with plt.xkcd():
-		plt.subplot(111) # 1, 1, 1
+	# with plt.xkcd():
+	plt.subplot(111) # 1, 1, 1
 
-		for i in xrange(3):
-			ranks.append(range(1, len(freq[i]) + 1))
-			frequencies.append([e[1] for e in freq[i]])
+	for i in xrange(3):
+		ranks.append(range(1, len(freq[i]) + 1))
+		frequencies.append([e[1] for e in freq[i]])
 
-			# log x and y axis	
-			plt.loglog(ranks[i], frequencies[i], basex=2, color=colors[i], label=langs[i])
+		# log x and y axis	
+		plt.loglog(ranks[i], frequencies[i], basex=10, color=colors[i], label=langs[i])
 
-		plt.legend()
-		plt.grid(True)
-		plt.title("Zipf's law!")
+	plt.legend()
+	plt.grid(True)
+	plt.title("Zipf's law!")
 
-		plt.xlabel('Rank')
-		plt.ylabel('Frequency')
+	plt.xlabel('Rank')
+	plt.ylabel('Frequency')
 
 	plt.show()
 
