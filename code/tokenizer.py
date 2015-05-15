@@ -81,7 +81,7 @@ def plot_zipf(*freq):
 		frequencies.append([e[1] for e in freq[i]])
 
 		# log x and y axis	
-		plt.loglog(ranks[i], frequencies[i], basex=10, color=colors[i], label=langs[i])
+		plt.loglog(ranks[i], frequencies[i], marker='', basex=10, color=colors[i], label=langs[i])
 
 	plt.legend()
 	plt.grid(True)
