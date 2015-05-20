@@ -1,0 +1,1 @@
+The second assignment works for windows. If you want to make it run on Mac and Linux, you will have to change the way the directories are parsed by using os.join.path(). Credits to Michael and his team.

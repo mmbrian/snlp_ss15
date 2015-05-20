@@ -1,3 +1,5 @@
 *.pdf
 nohup.out
 *.png
+*.pyc
+*.zip

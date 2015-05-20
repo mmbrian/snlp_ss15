@@ -6,4 +6,6 @@
 * [NLTK] (http://www.nltk.org/) (we'll use this one later)
 
 ###How?
-	python tokenizer.py
+	* For Ex01: 
+		python tokenizer.py
+		python tokenizer.py bonus
