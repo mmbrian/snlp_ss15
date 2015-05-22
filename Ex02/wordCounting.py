@@ -1,9 +1,10 @@
 import os
+import codecs
 from sets import Set
 
 #insert the paths of the training spam and non spam dataset. Don't remove the r before ''
-pathSpamTrain=r'C:\.....'
-pathNonSpamTrain=r'C:\..'
+pathSpamTrain=r'./dataset/spam-train/'
+pathNonSpamTrain=r'./dataset/nonspam-train/'
 
 #Insert the threshold. Only words with document frequency bigger than the threshold will be printed
 threshold=40 
@@ -14,7 +15,7 @@ threshold=40
 #Notice that the document frequencies are not for the whole collection
 dictionary=dict()
 for filename in os.listdir(pathSpamTrain):
-    with open(pathSpamTrain+'\\' +filename, 'r') as document:
+    with codecs.open(os.path.join(pathSpamTrain, filename), encoding='utf-8') as document:
         boo=False
         for line in document:
             tokens = line.split()
@@ -33,7 +34,7 @@ for key in dictionary:
         
 dictionary=dict()
 for filename in os.listdir(pathNonSpamTrain):
-    with open(pathNonSpamTrain+'\\' +filename, 'r') as document:
+    with codecs.open(os.path.join(pathNonSpamTrain, filename), encoding='utf-8') as document:
         boo=False
         for line in document:
             tokens = line.split()
