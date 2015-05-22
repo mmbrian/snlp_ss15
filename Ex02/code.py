@@ -1,5 +1,6 @@
 from __future__ import division
-import os, codecs
+import os, sys, codecs
+from pylab import plt
 
 from math import log10
 
@@ -37,22 +38,23 @@ class Toolkit:
 			Toolkit.init()
 
 		# Total number of documents
-		T = Toolkit.__Nspam + Toolkit.__Nnspam
 		T_spam = Toolkit.__Nspam
 		T_nspam = Toolkit.__Nnspam
+		T = T_spam + T_nspam
 		P_spam = T_spam / T
 
 		P_t = sum(Toolkit.__ret[word]) / T
 		# for each element in __ret, value is a two-item list, first item is document 
 		# frequency in spam training set, second item is document frequncy in non-spam set
-		P_t_spam = Toolkit.__ret[word][0] / T_spam
-		P_t_nspam = Toolkit.__ret[word][1] / T_nspam
+		
+		P_spam_given_t = Toolkit.__ret[word][0] / sum(Toolkit.__ret[word])
+		P_nspam_given_t = Toolkit.__ret[word][1] / sum(Toolkit.__ret[word]) 
 
-		# Here we add +1 for each log term in case conditional probability of a Class given
-		# term is zero.
+		# Here we add +sys.float_info.epsilon for each log term in case conditional probability of 
+		# a Class given term is zero.
 		return -sum(C_i * lg(C_i) for C_i in (P_spam, 1-P_spam)) + \
-				P_t * sum(pcit * lg(pcit + 1) for pcit in (P_t_spam, P_t_nspam)) + \
-				(1-P_t) * sum(pcitb * lg(pcitb + 1) for pcitb in (1-P_t_spam, 1-P_t_nspam))
+				P_t * sum(pcit * lg(pcit + sys.float_info.epsilon) for pcit in (P_spam_given_t, P_nspam_given_t)) + \
+				(1-P_t) * sum(pcitb * lg(pcitb + sys.float_info.epsilon) for pcitb in (1-P_spam_given_t, 1-P_nspam_given_t))
 
 
 
@@ -60,9 +62,22 @@ class Toolkit:
 	def computeMutInf(word):
 		'''
 		Computes mutual information of word in our training set.
+
+		We use only the spam class here to discriminate well for this category
+
+		I(t,c) = log(P(t, c) / (P(t)P(c)))
+			   = log(P(C|t)/P(c))
 		'''
 		if not Toolkit.initialized:
 			Toolkit.init()
+
+		T_spam = Toolkit.__Nspam
+		T_nspam = Toolkit.__Nnspam
+		T = T_spam + T_nspam
+
+		P_spam = T_spam / T
+		P_spam_given_t = Toolkit.__ret[word][0] / sum(Toolkit.__ret[word])
+		return lg((P_spam_given_t / P_spam) + sys.float_info.epsilon)
 
 	def get_ret(self):
 		# I know, i know, this is dirty but that's what's python's OOP is about! :D
@@ -131,10 +146,34 @@ def main():
 
 	print 'Computing document frequencies...'
 	print len(tk.get_ret()), 'tokens processed...'
-	for k, v in tk.get_ret().items():
-		print k, v
-		print 'Information Gain:', tk.computeInfGain(k)
-	print 'P(spam) =', tk.get_pspam()
+	# for k, v in tk.get_ret().items():
+	# 	print k, v
+	# 	print 'IG:', tk.computeInfGain(k), 'MI:', tk.computeMutInf(k)
+	# print 'P(spam) =', tk.get_pspam()
+	tokens = yk.get_ret().items()
+	stokens = sorted(tokens, key = lambda x: (x[1][0], x[1][1]))
+
+	wlist = [token[0] for token in tokens]
+	IG = [tk.computeInfGain(t) for t in wlist]
+	MI = [tk.computeMutInf(t) for t in wlist]
+	
+	# wlist = ['free', 'mail', 'list', 'com', 'receive', 'send', 'day', 'remove', 'here', 'profit']
+	# IG = [tk.computeInfGain(t) for t in wlist]
+	# MI = [tk.computeMutInf(t) for t in wlist]
+
+	plt.subplot(111)
+	plt.plot(range(len(wlist)), IG, marker='o', color='red', label='IG')
+	plt.plot(range(len(wlist)), MI, marker='o', color='blue', label='MI (Spam)')
+	plt.xlabel('Word')
+
+	# You can specify a rotation for the tick labels in degrees or with keywords.
+	plt.xticks(range(len(wlist)), wlist, rotation='vertical')
+	# Pad margins so that markers don't get clipped by the axes
+	plt.margins(0.2)
+	# Tweak spacing to prevent clipping of tick-labels
+	plt.subplots_adjust(bottom=0.15)
+	plt.legend()
+	plt.show()
 
 
 main()
