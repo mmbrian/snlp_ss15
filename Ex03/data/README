@@ -1,0 +1,19 @@
+The evaluation data for this exercise consist of six sense-annotated English words with two way ambiguities: bass (fish/music), crane (bird/machine), motion (movement/legal), palm (tree/hand), plant (living/factory), tank (container/vehicle). A definition for each sense of an ambiguous word is provided in a separate file with the corresponding name.
+
+The evaluation data [word].test files contains text snippets where the ambiguous word occurs, labeled with the correct sense:
+#LABEL <correct sense>
+Text Snippet
+
+The format of the definitions files [word].definition is similar:
+#DEFINITION <sense>
+Text of definition
+
+The definitions have been sorted according to their frequency of use in WordNet (in descending order).
+
+The test data is taken from the freely-available TWA Sense Tagged Data corpus. The format has been simplified. For more information about the original data:
+May 25, 2003 
+Rada Mihalcea and Li Yang
+University of North Texas 
+Contact: rada@cs.unt.edu
+
+The definitions are taken from Wikipedia articles on the respective topics.

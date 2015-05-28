@@ -12,6 +12,9 @@ nonSpamTrainPath = r"./dataset/nonspam-train"
 spamTestPath = r'./dataset/spam-test'   
 nonSpamTestPath = r"./dataset/nonspam-test"   
 
+# NOTICE!!
+# The speed can be significantly increased here by simple caching, 
+# It simply wasn't necessary
 def classify(attributes):
     #create the training set. No need to change something
     Xtrain=[]
