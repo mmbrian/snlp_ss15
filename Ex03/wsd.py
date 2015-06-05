@@ -1,5 +1,7 @@
 from __future__ import division
 import os, codecs
+import matplotlib.pyplot as plt
+
 from tokenizer import tokenize
 
 DATA_DIR = './data'
@@ -15,6 +17,8 @@ contexts = []
 
 def read_data():
 	global words, contexts
+	words = dict()
+	contexts = []
 
 	for filename in os.listdir(DATA_DIR):
 		if filename.endswith('.definition'): # test file
@@ -49,16 +53,18 @@ def read_data():
 		else: # readme or some other file
 			continue
 
-def normalize_data():
+def normalize_data(stem = True):
 	global contexts
 	for word in words:
 		# converting each sense-definition pair to sense-normalized_definition_tokens
-		words[word] = map(lambda pair: [pair[0], tokenize(pair[1])], words[word])
-	contexts = map(lambda triple: [triple[0], triple[1], tokenize(triple[2])], contexts)
+		words[word] = map(lambda pair: [pair[0], tokenize(pair[1], stem)], words[word])
+	# Normalizing contexts as well similarly
+	contexts = map(lambda triple: [triple[0], triple[1], tokenize(triple[2], stem)], contexts)
 
 
 def overlap(a, b):
 	# converting lists to sets
+	print a, b
 	a, b = set(a), set(b)
 	return 2 * len(a & b) / (len(a) + len(b))
 
@@ -75,23 +81,68 @@ def wsd(context, senses):
 def main():
 	print 'Reading data...'
 	read_data()
+	
+	print 'Computing results without stemming...'
+	normalize_data(False)
+	# For each word, 1st element corresponds to the number of correct guesses
+	# 2nd element is the number of incorrect guesses
+	results_nostem = dict(zip(words.keys(), [[0, 0] for i in xrange(len(words))]))
+	for ctxt in contexts:
+		word, sense, context = ctxt
+		result = wsd(context, words[word])
+		correct = sense == result # wsd is correct if the real sense matches our result
+		results_nostem[word][0 if correct else 1] += 1
+	for k, v in results_nostem.items():
+		print k, v, v[0]/(sum(v)) * 100
+	print 'Total: ', sum([v[0]/(sum(v)) * 100 for v in results_nostem.values()])/len(results_nostem), len(results_nostem)
+	print sum(sum(v) for v in results_nostem.values()), 'Contexts'
+
+
+	read_data()
 	print 'Normalizing data...'
 	normalize_data()
 	print 'Processing...'
-
-	# for each word, 1st element corresponds to the number of correct guesses
+	# For each word, 1st element corresponds to the number of correct guesses
 	# 2nd element is the number of incorrect guesses
-	results = dict(zip(words.keys(), [[0, 0] for i in xrange(len(words))]))
+	results_stem = dict(zip(words.keys(), [[0, 0] for i in xrange(len(words))]))
 	for ctxt in contexts:
 		word, sense, context = ctxt
 		result = wsd(context, words[word])
 		correct = sense == result
-		results[word][0 if correct else 1] += 1
-	for k, v in results.items():
+		results_stem[word][0 if correct else 1] += 1
+	for k, v in results_stem.items():
 		print k, v, v[0]/(sum(v)) * 100
-	print 'Total: ', sum([v[0]/(sum(v)) * 100 for v in results.values()])/len(results), len(results)
-	print sum(sum(v) for v in results.values()), 'Contexts'
+	print 'Total: ', sum([v[0]/(sum(v)) * 100 for v in results_stem.values()])/len(results_stem), len(results_stem)
+	print sum(sum(v) for v in results_stem.values()), 'Contexts'
 
+	
+	# Plotting results
+	fig, ax = plt.subplots()
+	rects1 = ax.bar(range(len(results_nostem)), 
+					[round(v[0]/(sum(v)) * 100, 2) for v in results_nostem.values()], 
+					0.3, color='r')
+
+	rects2 = ax.bar(map(lambda x:x+.3, range(len(results_stem))), 
+					[round(v[0]/(sum(v)) * 100, 2) for v in results_stem.values()], 
+					0.3, color='b')
+
+	ax.set_ylabel('Accuracy')
+	ax.set_xlabel('Word')
+	ax.set_xticks(map(lambda x:x+.3, range(len(results_stem))))
+	ax.set_xticklabels(results_nostem.keys())
+
+	ax.legend((rects1[0], rects2[0]), ('Not Stemmed', 'Stemmed'), loc=9)
+	
+	def autolabel(rects):
+	    # attach some text labels
+	    for rect in rects:
+	        height = rect.get_height()
+	        ax.text(rect.get_x()+rect.get_width()/2., 1.02*height, '%d'%int(height),
+	                ha='center', va='bottom')
+	autolabel(rects1)
+	autolabel(rects2)
+
+	plt.show()
 	# # print 'Printing some results...'
 	# # Uncomment to print word data
 	# for word, senses in words.items():

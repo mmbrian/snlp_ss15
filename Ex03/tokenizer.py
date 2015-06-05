@@ -6,8 +6,8 @@ from nltk.stem.lancaster import LancasterStemmer
 import sys
 
 # TODO: in the end, experiment with snowball stemmer and compare results!
-# en_stem = nltk.snowball.EnglishStemmer().stem
-en_stem = LancasterStemmer().stem
+en_stem = nltk.snowball.EnglishStemmer().stem
+# en_stem = LancasterStemmer().stem
 
 # We're just using this stop word list from nltk, we could as well copy paste the list here
 stop_words = nltk.corpus.stopwords.words('english')
